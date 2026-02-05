@@ -129,7 +129,8 @@ function getInventory() {
             // but user edits (like changed 'price' or 'name') are preserved.
             return {
                 ...codeItem,
-                ...storedItem
+                ...storedItem,
+                image: codeItem.image // Fix: Always use the code's image path to recover from broken cache
             };
         }
         return storedItem; // It's a custom added item (Admin), keep as is
