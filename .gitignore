@@ -1,0 +1,19 @@
+# Connectivity
+node_modules/
+package-lock.json
+yarn.lock
+
+# System Files
+.DS_Store
+Thumbs.db
+*.log
+
+# Editor Directories
+.vscode/
+.idea/
+*.swp
+
+# Temporary
+tmp/
+dist/
+build/

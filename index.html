@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rathna Home Foods - Order Online</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function () {
+            // Initialize with the Public Key if present in settings (will check at runtime)
+            // For now just load the library
+        })();
+    </script>
+</head>
+
+<body>
+    <canvas id="particle-canvas"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.6; pointer-events: none;"></canvas>
+    <div class="app-container">
+        <!-- Floating Cart Button -->
+        <div id="floating-cart" class="floating-cart" onclick="toggleCart()">
+            🛒 <span id="cart-count">0</span>
+        </div>
+
+        <!-- Hamburger Menu Button -->
+        <div class="hamburger-btn" onclick="toggleSidebar()">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+
+        <!-- Sidebar Navigation -->
+        <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h3>Menu</h3>
+                <button class="close-sidebar" onclick="toggleSidebar()">×</button>
+            </div>
+            <ul class="sidebar-links">
+                <li><a href="index.html" onclick="toggleSidebar()">Home</a></li>
+                <li><a href="#hot-items" onclick="toggleSidebar()">Hot Items</a></li>
+                <li><a href="#laddus" onclick="toggleSidebar()">Laddus</a></li>
+                <li><a href="#chikki-java" onclick="toggleSidebar()">Chikki & Java</a></li>
+                <li><a href="profile.html" onclick="toggleSidebar()">Profile</a></li>
+                <li><a href="admin.html" onclick="toggleSidebar()" id="sidebar-admin-link" style="display: none;">Admin
+                        Panel</a></li>
+                <li><a href="login.html" onclick="toggleSidebar()">Login / Sign Up</a></li>
+            </ul>
+        </nav>
+
+        <!-- Hero Section -->
+        <header class="hero-section">
+            <div class="top-nav" style="position:absolute; top:20px; right:20px; z-index:10;">
+                <a href="login.html" id="auth-link"
+                    style="color:white; text-decoration:none; font-weight:600; background:rgba(255,255,255,0.2); padding:8px 16px; border-radius:20px; backdrop-filter:blur(4px);">Login
+                    / Sign Up</a>
+            </div>
+
+            <div class="hero-bg-overlay"></div>
+            <div class="hero-content">
+                <h1 class="brand-title">Rathna Home Foods</h1>
+                <p class="brand-subtitle">Legacy of Millets & Tradition</p>
+                <a href="#hot-items" class="cta-button">Order Now</a>
+            </div>
+        </header>
+
+        <!-- Trust Banner (Infinite Scroll) -->
+        <div class="trust-banner-container">
+            <div class="trust-banner">
+                <!-- Duplicate content for seamless scrolling -->
+                <div class="trust-content">
+                    <span><i class="icon">🌿</i> No Palm Oil</span>
+                    <span><i class="icon">🚫</i> No Preservatives</span>
+                    <span><i class="icon">✨</i> No Added Colors</span>
+                    <span><i class="icon">🌾</i> 100% Millets</span>
+                    <span><i class="icon">👵</i> Traditional Recipes</span>
+                    <span><i class="icon">🌿</i> No Palm Oil</span>
+                    <span><i class="icon">🚫</i> No Preservatives</span>
+                    <span><i class="icon">✨</i> No Added Colors</span>
+                    <span><i class="icon">🌾</i> 100% Millets</span>
+                    <span><i class="icon">👵</i> Traditional Recipes</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shop By Category (Circular Layout) -->
+        <section class="category-section reveal">
+            <div class="section-header text-center">
+                <h2>Shop By Category</h2>
+                <p class="subtitle">Explore our range of traditional delicacies</p>
+            </div>
+            <div class="category-grid">
+                <a href="#hot-items" class="category-item">
+                    <div class="cat-img-wrapper">
+                        <div class="cat-placeholder" style="background: linear-gradient(45deg, #eb3349, #f45c43);">🌶️
+                        </div>
+                    </div>
+                    <h3>Hot Items</h3>
+                </a>
+                <a href="#laddus" class="category-item">
+                    <div class="cat-img-wrapper">
+                        <div class="cat-placeholder" style="background: linear-gradient(45deg, #F2994A, #F2C94C);">🍡
+                        </div>
+                    </div>
+                    <h3>Laddus</h3>
+                </a>
+                <a href="#chikki-java" class="category-item">
+                    <div class="cat-img-wrapper">
+                        <div class="cat-placeholder" style="background: linear-gradient(45deg, #56ab2f, #a8e063);">🥜
+                        </div>
+                    </div>
+                    <h3>Chikki & Java</h3>
+                </a>
+            </div>
+        </section>
+
+        <!-- Why Choose Us Section -->
+        <section class="features-section reveal">
+            <div class="feature-card">
+                <div class="feature-icon">🌾</div>
+                <div class="feature-text">
+                    <h3>100% Organic</h3>
+                    <p>Pure millets sourced directly from farmers.</p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👵</div>
+                <div class="feature-text">
+                    <h3>Traditional Recipes</h3>
+                    <p>Authentic taste passed down through generations.</p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🚫</div>
+                <div class="feature-text">
+                    <h3>Zero Preservatives</h3>
+                    <p>Freshly made, healthy, and safe for all ages.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content Grid -->
+        <main class="menu-grid">
+
+            <!-- Search Bar -->
+            <div class="search-container reveal">
+                <input type="text" id="product-search" placeholder="Search for snacks, laddus..."
+                    onkeyup="filterProducts()">
+                <span class="search-icon">🔍</span>
+            </div>
+
+            <!-- Hot Items Section -->
+            <section class="menu-category reveal" id="hot-items">
+                <div class="category-header">
+                    <h2>Hot Items</h2>
+                </div>
+                <!-- Grid Container -->
+                <div class="items-list">
+                    <div id="hot-items-container">
+                        <!-- Cards rendered via JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Laddus Section -->
+            <section class="menu-category reveal" id="laddus">
+                <div class="category-header">
+                    <h2>Laddus</h2>
+                </div>
+                <div class="items-list">
+                    <div id="laddus-container">
+                        <!-- Cards rendered via JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Chikki and Java Section -->
+            <section class="menu-category reveal" id="chikki-java">
+                <div class="category-header">
+                    <h2>Chikki & Java</h2>
+                </div>
+                <div class="items-list">
+                    <div id="chikki-java-container">
+                        <!-- Cards rendered via JS -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer / Contact Section -->
+        <footer class="main-footer">
+            <div class="contact-card">
+                <div class="contact-info">
+                    <h3>Contact Us</h3>
+                    <p class="phone-number">8121178242</p>
+                    <p class="address">R.C.Road, Royal Nagar, Tirupati</p>
+                </div>
+            </div>
+
+            <div class="footer-banner">
+                <p>Customization Available • Thank You, Visit Again 🙏</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="cart-modal-overlay">
+        <div class="cart-modal-content">
+            <div class="cart-header">
+                <h2>Your Order</h2>
+                <button class="close-btn" onclick="toggleCart()">×</button>
+            </div>
+
+            <div class="cart-scrollable-content">
+                <div id="cart-items" class="cart-items-container">
+                    <p style="text-align:center; margin-top:2rem; color:#888;">Your cart is empty.</p>
+                </div>
+                <div class="cart-footer">
+                    <div
+                        style="display:flex; justify-content:space-between; font-weight:bold; font-size:1.2rem; margin-bottom:1rem;">
+                        <span>Total:</span>
+                        <span id="cart-total-price">₹0</span>
+                    </div>
+                    <div class="delivery-form">
+                        <input type="text" id="cust-name" placeholder="Your Name" required>
+                        <input type="text" id="cust-phone" placeholder="Phone Number" required>
+                        <textarea id="cust-address" placeholder="Delivery Address" rows="2" required></textarea>
+
+                        <div class="payment-options">
+                            <label class="payment-label">Payment Method:</label>
+                            <div class="payment-choice">
+                                <input type="radio" name="payment" value="UPI/Online" id="pay-upi" checked
+                                    onchange="togglePaymentDetails()">
+                                <label for="pay-upi">UPI / Online Pay</label>
+                            </div>
+                            <div class="payment-choice">
+                                <input type="radio" name="payment" value="Cash on Delivery" id="pay-cod"
+                                    onchange="togglePaymentDetails()">
+                                <label for="pay-cod">Cash on Delivery</label>
+                            </div>
+
+                            <!-- Payment Details (QR Code) -->
+                            <div id="payment-qr"
+                                style="margin-top:15px; text-align:center; background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; border:1px dashed var(--gold-primary);">
+                                <p style="margin:0 0 10px 0; font-size:0.9rem; color:var(--text-muted);">Scan to pay
+                                    securely</p>
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=8121178242@upi&pn=RathnaHomeFoods"
+                                    alt="Payment QR"
+                                    style="width:120px; height:120px; border-radius:8px; border:2px solid white;">
+                                <p
+                                    style="margin:10px 0 0 0; font-size:0.8rem; letter-spacing:1px; color:var(--gold-primary);">
+                                    UPI: 8121178242@upi</p>
+
+                                <div style="margin-top:15px; width:100%;">
+                                    <label
+                                        style="display:block; color:var(--text-muted); font-size:0.9rem; margin-bottom:5px; text-align:left;">Upload
+                                        Payment Screenshot (Required)</label>
+                                    <input type="file" id="payment-screenshot" accept="image/*"
+                                        style="width:100%; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; padding:8px; border-radius:6px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="checkout-btn" onclick="checkout()">
+                        Place Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="add-to-cart.js"></script>
+    <script>
+        // Scroll Reveal Observer
+        document.addEventListener('DOMContentLoaded', () => {
+            const observerOptions = {
+                threshold: 0.15,
+                rootMargin: "0px 0px -50px 0px"
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    } else {
+                        entry.target.classList.remove('active'); // Replay animation on exit/re-entry
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        });
+
+        // --- Sidebar Toggle Logic ---
+        // --- Sidebar Toggle Logic ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+
+        function togglePaymentDetails() {
+            const isUpi = document.getElementById('pay-upi').checked;
+            const qrBox = document.getElementById('payment-qr');
+            if (isUpi) {
+                qrBox.style.display = 'block';
+            } else {
+                qrBox.style.display = 'none';
+            }
+        }
+    </script>
+    <script>
+        // --- 1. Gold Dust Particle Animation ---
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        class GoldParticle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.2; // Very slow, elegant float
+                this.vy = (Math.random() - 0.5) * 0.2;
+                this.size = Math.random() * 2 + 0.5; // Tiny, like dust
+                this.alpha = Math.random() * 0.5 + 0.1;
+                this.glow = Math.random() > 0.9; // 10% sparkle chance
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Wrap around
+                if (this.x < 0) this.x = width;
+                if (this.x > width) this.x = 0;
+                if (this.y < 0) this.y = height;
+                if (this.y > height) this.y = 0;
+
+                // Twinkle effect
+                if (this.glow) {
+                    this.alpha += (Math.random() - 0.5) * 0.02;
+                    if (this.alpha > 0.8) this.alpha = 0.8;
+                    if (this.alpha < 0.1) this.alpha = 0.1;
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(212, 175, 55, ${this.alpha})`; // Gold color
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            resize();
+            particles = [];
+            for (let i = 0; i < 150; i++) particles.push(new GoldParticle()); // More particles, smaller size
+            animateParticles();
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        window.addEventListener('resize', resize);
+        window.addEventListener('DOMContentLoaded', initParticles);
+
+        // --- 2. 3D Tilt Effect for Cards ---
+        document.addEventListener('mousemove', (e) => {
+            document.querySelectorAll('.product-card').forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // Only animate if mouse is near/over the card to save performance
+                if (x > -50 && x < rect.width + 50 && y > -50 && y < rect.height + 50) {
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = ((y - centerY) / centerY) * -2; // Subtler tilt (2deg)
+                    const rotateY = ((x - centerX) / centerX) * 2;
+
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px)`;
+                } else {
+                    // Reset but keep hover lift if hovered (css handles hover lift w/ translateY)
+                    //Actually, best to clear inline transform so CSS :hover takes over or settle at 0
+                    card.style.transform = '';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

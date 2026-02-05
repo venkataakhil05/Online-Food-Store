@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Rathna Home Foods</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .profile-container {
+            max-width: 800px;
+            margin: 4rem auto;
+            padding: 2rem;
+            background: var(--bg-card);
+            /* Dark Glass */
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .user-info h2 {
+            font-family: var(--font-heading);
+            color: var(--gold-primary);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .user-details {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .order-history h3 {
+            font-size: 1.8rem;
+            color: var(--gold-light);
+            /* Visible on dark */
+            margin-bottom: 1.5rem;
+            font-family: var(--font-heading);
+        }
+
+        .order-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .order-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--gold-primary);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .order-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .order-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .status-confirmed {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .status-rejected {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .order-items {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 10px;
+            color: var(--text-main);
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+            padding-bottom: 5px;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .order-total {
+            text-align: right;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--gold-primary);
+            margin-top: 1rem;
+        }
+
+        .admin-link {
+            display: inline-block;
+            margin-top: 2rem;
+            color: var(--primary-green);
+            font-weight: 600;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Simple Nav -->
+    <div style="background: var(--primary-green); padding: 1rem 2rem;">
+        <a href="index.html" style="color:white; text-decoration:none; font-weight:bold;">&larr; Back to Shop</a>
+    </div>
+
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="user-info">
+                <h2 id="user-name">Loading...</h2>
+                <div class="user-details">
+                    <div id="user-phone"></div>
+                    <div id="user-address"></div>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="handleLogout()">Logout</button>
+        </div>
+
+        <div class="order-history">
+            <h3>Order History</h3>
+            <div id="orders-list">
+                <!-- JS will pop this -->
+            </div>
+        </div>
+
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = window.RathnaApp.getUserSession();
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            document.getElementById('user-name').innerText = user.name;
+            document.getElementById('user-phone').innerText = user.phone;
+            document.getElementById('user-address').innerText = user.address;
+
+            // Show Admin Link if Admin User
+            if (user.phone === '8121178242') {
+                const adminDiv = document.createElement('div');
+                adminDiv.style.marginTop = '20px';
+                adminDiv.style.borderTop = '1px solid #eee';
+                adminDiv.style.paddingTop = '10px';
+                adminDiv.innerHTML = '<a href="admin.html" class="admin-link">Access Admin Panel 🔒</a>';
+                document.querySelector('.profile-container').appendChild(adminDiv);
+            }
+
+            renderOrders(user.phone);
+        });
+
+        function renderOrders(phone) {
+            const orders = window.RathnaApp.getUserOrders(phone);
+            const container = document.getElementById('orders-list');
+
+            if (orders.length === 0) {
+                container.innerHTML = '<p style="color:#888; text-align:center;">No orders yet. Time to order some laddus! 😋</p>';
+                return;
+            }
+
+            let html = '';
+            orders.forEach(order => {
+                const date = new Date(order.timestamp).toLocaleDateString() + ' ' + new Date(order.timestamp).toLocaleTimeString();
+
+                let itemsHtml = '';
+                Object.values(order.items).forEach(item => {
+                    itemsHtml += `<div class="order-item"><span>${item.name} <small>x${item.quantity}</small></span> <span>₹${item.price * item.quantity}</span></div>`;
+                });
+
+                let paymentStatusHtml = '';
+                const pMethod = (order.payment || '').toLowerCase();
+
+                if (pMethod.includes('cash')) {
+                    paymentStatusHtml = '<div style="font-size:0.9rem; color:#fca5a5; margin-top:5px; font-weight:600;">Payment Pending (COD)</div>';
+                } else {
+                    paymentStatusHtml = '<div style="font-size:0.9rem; color:#34d399; margin-top:5px; font-weight:600;">Payment Completed (Online)</div>';
+                }
+
+                html += `
+                    <div class="order-card">
+                        <div class="order-meta">
+                            <span>#${order.id}</span>
+                            <span>${date}</span>
+                            <span class="order-status status-${order.status}">${order.status}</span>
+                        </div>
+                        <div class="order-items">
+                            ${itemsHtml}
+                        </div>
+                        <div class="order-total">
+                            Total: ₹${order.total}
+                            ${paymentStatusHtml}
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function handleLogout() {
+            window.RathnaApp.logout();
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+
+</html>
