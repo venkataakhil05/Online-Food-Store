@@ -926,10 +926,35 @@
                     statusOptions += `<option value="${s}" ${selected}>${label}</option>`;
                 });
 
-                // Receipt Button
+                // Receipt Logic
                 let receiptBtn = '';
+                let receiptThumbnail = '';
+
                 if (order.paymentScreenshot) {
-                    receiptBtn = `<button onclick="viewReceipt('${order.paymentScreenshot}')" class="action-btn" style="background:#3b82f6; color:white; font-size:0.8rem; margin-right:10px;">📄 View Receipt</button>`;
+                    // Button to view full receipt
+                    receiptBtn = `<button onclick="viewReceipt('${order.id}')" class="action-btn" style="background:#3b82f6; color:white; font-size:0.8rem; margin-right:10px;">📄 View Receipt</button>`;
+
+                    // Thumbnail for Order Details
+                    receiptThumbnail = `
+                        <div style="margin-top:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:8px; border:1px dashed var(--glass-border); display:flex; align-items:center; gap:10px;">
+                            <img src="${order.paymentScreenshot}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid white;" onclick="viewReceipt('${order.id}')">
+                            <span style="font-size:0.85rem; color:#60a5fa; cursor:pointer; text-decoration:underline;" onclick="viewReceipt('${order.id}')">Payment Screenshot Attached</span>
+                        </div>
+                    `;
+                }
+
+                // Verification Logic
+                let verificationUi = '';
+                if (order.paymentScreenshot && order.status === 'pending') {
+                    verificationUi = `
+                        <div style="margin-top:10px; padding:10px; background:rgba(245, 158, 11, 0.1); border:1px dashed #f59e0b; border-radius:8px;">
+                            <div style="font-size:0.85rem; color:#f59e0b; margin-bottom:5px; font-weight:bold;">⚠️ Verfication Needed</div>
+                            <div style="display:flex; gap:10px;">
+                                <button onclick="viewReceipt('${order.id}')" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; padding:5px 10px; border-radius:4px; cursor:pointer;">👁 View Receipt</button>
+                                <button onclick="updateOrderStatus('${order.id}', 'confirmed')" style="background:var(--primary-green); border:none; color:white; padding:5px 10px; border-radius:4px; font-weight:bold; cursor:pointer;">✅ Confirm Payment</button>
+                            </div>
+                        </div>
+                    `;
                 }
 
                 div.innerHTML = `
@@ -951,9 +976,12 @@
                         <div style="margin-top:5px; font-size:0.8rem; color:${order.payment === 'online-upi' ? '#34d399' : '#f59e0b'}; text-align:right;">
                             Paid via: ${order.payment.toUpperCase()}
                         </div>
+                        
+                        ${receiptThumbnail ? receiptThumbnail : ''}
+                        ${verificationUi}
+
                     </div>
                     <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px;">
-                        ${receiptBtn}
                         <select onchange="updateOrderStatus('${order.id}', this.value)" class="login-input" style="width:auto; margin:0; padding:5px; font-size:0.8rem;">
                             ${statusOptions}
                         </select>
@@ -978,9 +1006,15 @@
             }
         }
 
-        function viewReceipt(base64Img) {
-            document.getElementById('receipt-image').src = base64Img;
-            document.getElementById('receipt-modal').style.display = 'flex';
+        function viewReceipt(orderId) {
+            const orders = window.RathnaApp.getOrders();
+            const order = orders.find(o => o.id === orderId);
+            if (order && order.paymentScreenshot) {
+                document.getElementById('receipt-image').src = order.paymentScreenshot;
+                document.getElementById('receipt-modal').style.display = 'flex';
+            } else {
+                alert("Receipt not found for this order.");
+            }
         }
 
         // Init

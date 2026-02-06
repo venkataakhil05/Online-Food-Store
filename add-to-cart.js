@@ -1,7 +1,9 @@
 /* add-to-cart.js */
 
 // Global Cart State
+// Global Cart State
 let cart = {};
+let appliedCoupon = null; // Store applied coupon object { code, value, type }
 
 // Helper to format currency
 const formatPrice = (price) => `₹${price}`;
@@ -138,6 +140,11 @@ function createMenuItemElement(item) {
         <div class="card-img-placeholder">${imageContent}</div>
         <div class="card-content">
             <h3 class="card-title">${item.name}</h3>
+            
+            <div class="card-tags">
+                ${(item.tags || []).slice(0, 3).map(tag => `<span class="nutrition-tag">${tag}</span>`).join('')}
+            </div>
+
             <div class="card-meta">
                 <span>${item.qty}</span>
             </div>
@@ -259,7 +266,31 @@ function renderCartItems() {
         deliveryCharge = settings.deliveryCharge;
     }
 
-    const grandTotal = subtotal + deliveryCharge;
+    // Coupon Logic
+    let discount = 0;
+    if (appliedCoupon) {
+        if (appliedCoupon.type === 'percent') {
+            discount = Math.round((subtotal * appliedCoupon.value) / 100);
+        } else if (appliedCoupon.type === 'flat') {
+            discount = appliedCoupon.value;
+        }
+    }
+
+    const grandTotal = Math.max(0, subtotal + deliveryCharge - discount);
+
+    // Coupon Layout
+    const couponHtml = `
+        <div style="margin-top:10px; padding:10px; background:rgba(255,255,255,0.02); border-radius:8px;">
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="coupon-input" placeholder="Promo Code" style="flex-grow:1; padding:8px; border-radius:4px; border:1px solid #333; background:black; color:white;" value="${appliedCoupon ? appliedCoupon.code : ''}" ${appliedCoupon ? 'disabled' : ''}>
+                ${appliedCoupon ?
+            `<button onclick="removeCoupon()" style="background:#ef4444; color:white; border:none; padding:0 15px; border-radius:4px; cursor:pointer;">✖</button>` :
+            `<button onclick="applyCoupon(document.getElementById('coupon-input').value)" style="background:var(--gold-primary); color:black; border:none; padding:0 15px; border-radius:4px; font-weight:bold; cursor:pointer;">Apply</button>`
+        }
+            </div>
+            ${appliedCoupon ? `<div style="color:#34d399; font-size:0.8rem; margin-top:5px;">Coupon '${appliedCoupon.code}' Applied!</div>` : ''}
+        </div>
+    `;
 
     // Add Totals Summary
     html += `
@@ -272,12 +303,56 @@ function renderCartItems() {
             <span>Delivery Charge</span>
             <span>${deliveryCharge === 0 ? 'FREE' : formatPrice(deliveryCharge)}</span>
         </div>
-        ${deliveryCharge > 0 ? `<div style="text-align:right; font-size:0.8rem; color:var(--text-muted);">Free delivery above ${formatPrice(settings.freeDeliveryThreshold)}</div>` : ''}
+        ${discount > 0 ? `
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px; color:#34d399;">
+            <span>Discount</span>
+            <span>- ${formatPrice(discount)}</span>
+        </div>` : ''}
+        
+        ${couponHtml}
+
+        ${deliveryCharge > 0 ? `<div style="text-align:right; font-size:0.8rem; color:var(--text-muted); margin-top:5px;">Free delivery above ${formatPrice(settings.freeDeliveryThreshold)}</div>` : ''}
     </div>
 `;
 
     container.innerHTML = html;
     totalEl.innerText = formatPrice(grandTotal);
+}
+
+// --- Coupon Functions ---
+
+function applyCoupon(code) {
+    if (!code) return;
+    const cleanCode = code.toUpperCase().trim();
+    const inventory = window.RathnaApp.getInventory(); // Just to access scope if needed? No, need PROMO_CODES
+    // Since PROMO_CODES is exported in data.js, we can access via window.RathnaApp if we exported it?
+    // We did export it in previous step!
+
+    const promoData = window.RathnaApp.PROMO_CODES;
+
+    if (promoData[cleanCode]) {
+        const coupon = promoData[cleanCode];
+
+        // Calculate Subtotal for Min Order Check
+        let subtotal = 0;
+        Object.values(cart).forEach(item => subtotal += item.price * item.quantity);
+
+        if (subtotal >= coupon.minOrder) {
+            appliedCoupon = { code: cleanCode, ...coupon };
+            window.RathnaApp.showToast(`Coupon ${cleanCode} Applied!`, 'success');
+            renderCartItems();
+        } else {
+            window.RathnaApp.showToast(`Minimum order of ₹${coupon.minOrder} required for this code.`, 'error');
+        }
+    } else {
+        window.RathnaApp.showToast("Invalid Coupon Code", 'error');
+    }
+}
+
+function removeCoupon() {
+    appliedCoupon = null;
+    renderCartItems();
+    window.RathnaApp.showToast("Coupon Removed", 'info');
 }
 
 // --- Checkout Logic ---
@@ -295,83 +370,102 @@ function readFileAsBase64(file) {
 // --- Checkout Logic ---
 
 async function checkout() {
-    const name = document.getElementById('cust-name').value.trim();
-    const phone = document.getElementById('cust-phone').value.trim();
-    const address = document.getElementById('cust-address').value.trim();
-    const paymentMode = document.querySelector('input[name="payment"]:checked').value;
+    try {
+        const name = document.getElementById('cust-name').value.trim();
+        const phone = document.getElementById('cust-phone').value.trim();
+        const address = document.getElementById('cust-address').value.trim();
+        const paymentRadio = document.querySelector('input[name="payment"]:checked');
 
-    if (Object.keys(cart).length === 0) {
-        window.RathnaApp.showToast("Your cart is empty!", 'error');
-        return;
-    }
-
-    if (!name || !phone || !address) {
-        window.RathnaApp.showToast("Please fill in your Name, Phone, and Address.", 'error');
-        return;
-    }
-
-    // 0. Online Payment Validation
-    let paymentScreenshot = null;
-    if (paymentMode === 'online-upi') {
-        const fileInput = document.getElementById('payment-screenshot');
-        if (fileInput.files.length === 0) {
-            window.RathnaApp.showToast("Please upload the Payment Screenshot.", 'error');
+        if (!paymentRadio) {
+            window.RathnaApp.showToast("Please select a payment method.", 'error');
             return;
         }
-        try {
-            paymentScreenshot = await readFileAsBase64(fileInput.files[0]);
-        } catch (e) {
-            console.error("File Read Error", e);
-            window.RathnaApp.showToast("Error reading screenshot file.", 'error');
+        const paymentMode = paymentRadio.value;
+
+        if (Object.keys(cart).length === 0) {
+            window.RathnaApp.showToast("Your cart is empty!", 'error');
             return;
         }
-    }
 
-    // 1. Stock Check
-    const inventory = window.RathnaApp.getInventory();
-    let stockIssue = false;
-    for (const [id, item] of Object.entries(cart)) {
-        const product = inventory.find(p => p.id === id);
-        if (!product || product.stockStatus === 'out') {
-            window.RathnaApp.showToast(`Sorry, ${item.name} is out of stock.`, 'error');
-            stockIssue = true;
+        if (!name || !phone || !address) {
+            window.RathnaApp.showToast("Please fill in your Name, Phone, and Address.", 'error');
+            return;
         }
-    }
-    if (stockIssue) return;
+
+        // 0. Online Payment Validation
+        let paymentScreenshot = null;
+        if (paymentMode === 'online-upi') {
+            const fileInput = document.getElementById('payment-screenshot');
+            if (fileInput.files.length === 0) {
+                window.RathnaApp.showToast("Please upload the Payment Screenshot.", 'error');
+                return;
+            }
+            try {
+                paymentScreenshot = await readFileAsBase64(fileInput.files[0]);
+            } catch (e) {
+                console.error("File Read Error", e);
+                window.RathnaApp.showToast("Error reading screenshot file.", 'error');
+                return;
+            }
+        }
+
+        // 1. Stock Check
+        const inventory = window.RathnaApp.getInventory();
+        let stockIssue = false;
+        for (const [id, item] of Object.entries(cart)) {
+            const product = inventory.find(p => p.id === id);
+            if (!product || product.stockStatus === 'out') {
+                window.RathnaApp.showToast(`Sorry, ${item.name} is out of stock.`, 'error');
+                stockIssue = true;
+            }
+        }
+        if (stockIssue) return;
 
 
-    // 3. Create Order
-    let subtotal = 0;
-    Object.values(cart).forEach(item => subtotal += item.price * item.quantity);
+        // 3. Create Order
+        let subtotal = 0;
+        Object.values(cart).forEach(item => subtotal += item.price * item.quantity);
 
-    const settings = window.RathnaApp.getSettings();
-    let deliveryCharge = 0;
-    if (subtotal < settings.freeDeliveryThreshold) {
-        deliveryCharge = settings.deliveryCharge;
-    }
-    const total = subtotal + deliveryCharge;
+        const settings = window.RathnaApp.getSettings();
+        let deliveryCharge = 0;
+        if (subtotal < settings.freeDeliveryThreshold) {
+            deliveryCharge = settings.deliveryCharge;
+        }
 
-    const orderData = {
-        customer: { name, phone, address },
-        items: cart,
-        breakdown: { subtotal, deliveryCharge, total },
-        total: total,
-        payment: paymentMode,
-        paymentScreenshot: paymentScreenshot, // Add image data
-        status: 'pending' // Default status
-    };
+        // Recalculate Discount for Security
+        let discount = 0;
+        if (appliedCoupon) {
+            if (appliedCoupon.type === 'percent') {
+                discount = Math.round((subtotal * appliedCoupon.value) / 100);
+            } else if (appliedCoupon.type === 'flat') {
+                discount = appliedCoupon.value;
+            }
+        }
 
-    // CAPTURE RETURN VALUE
-    const newOrder = window.RathnaApp.placeOrder(orderData);
+        const total = Math.max(0, subtotal + deliveryCharge - discount);
+
+        const orderData = {
+            customer: { name, phone, address },
+            items: cart,
+            breakdown: { subtotal, deliveryCharge, discount, total },
+            coupon: appliedCoupon ? appliedCoupon.code : null,
+            total: total,
+            payment: paymentMode,
+            paymentScreenshot: paymentScreenshot, // Add image data
+            status: 'pending' // Default status
+        };
+
+        // CAPTURE RETURN VALUE
+        const newOrder = window.RathnaApp.placeOrder(orderData);
 
 
-    // --- NOTIFICATIONS ---
+        // --- NOTIFICATIONS ---
 
-    // 1. Prepare Order Text
-    let itemsText = '';
-    Object.values(cart).forEach(i => itemsText += `${i.quantity} x ${i.name} (₹${i.price})\n`);
+        // 1. Prepare Order Text
+        let itemsText = '';
+        Object.values(cart).forEach(i => itemsText += `${i.quantity} x ${i.name} (₹${i.price})\n`);
 
-    const message = `
+        const message = `
 *NEW ORDER #${newOrder.id}*
 ------------------
 *Customer:* ${name}
@@ -385,67 +479,71 @@ ${itemsText}
 *Payment:* ${paymentMode}
 `.trim();
 
-    // 2. WhatsApp Notification (Immediate)
-    if (settings.ownerPhone) {
-        const waUrl = `https://wa.me/${settings.ownerPhone}?text=${encodeURIComponent(message)}`;
-        window.open(waUrl, '_blank');
-    }
-
-    // 3. Email Notification (via EmailJS)
-    if (settings.emailJsPublicKey && settings.emailJsServiceId && settings.emailJsTemplateId) {
-        emailjs.init(settings.emailJsPublicKey);
-
-        const emailParams = {
-            order_id: newOrder.id,
-            to_name: "Rathna Foods Owner",
-            customer_name: name,
-            customer_phone: phone,
-            customer_address: address,
-            message_body: itemsText.replace(/\n/g, '<br>'), // HTML break for email
-            total_amount: total,
-            payment_method: paymentMode,
-            owner_email: settings.ownerEmail
-        };
-
-        // If screenshot exists, we might ideally upload it to a cloud and send a link.
-        // But Free EmailJS doesn't support attachments easily without paid tier or complex base64 config.
-        // We will just mention it in the email text for now to check Admin Portal.
-        if (paymentScreenshot) {
-            emailParams.message_body += "<br><br><b>Note: Payment Screenshot attached in Admin Portal.</b>";
+        // 2. WhatsApp Notification (Immediate)
+        if (settings.ownerPhone) {
+            const waUrl = `https://wa.me/${settings.ownerPhone}?text=${encodeURIComponent(message)}`;
+            window.open(waUrl, '_blank');
         }
 
-        emailjs.send(settings.emailJsServiceId, settings.emailJsTemplateId, emailParams).then(
-            (response) => {
-                console.log('SUCCESS!', response.status, response.text);
-            },
-            (error) => {
-                console.log('FAILED...', error);
-                window.RathnaApp.showToast("Order placed, but email failed.", 'info');
+        // 3. Email Notification (via EmailJS)
+        if (settings.emailJsPublicKey && settings.emailJsServiceId && settings.emailJsTemplateId) {
+            emailjs.init(settings.emailJsPublicKey);
+
+            const emailParams = {
+                order_id: newOrder.id,
+                to_name: "Rathna Foods Owner",
+                customer_name: name,
+                customer_phone: phone,
+                customer_address: address,
+                message_body: itemsText.replace(/\n/g, '<br>'), // HTML break for email
+                total_amount: total,
+                payment_method: paymentMode === 'online-upi' ? 'UPI / Online' : 'Cash on Delivery',
+                owner_email: settings.ownerEmail
+            };
+
+            // If screenshot exists, we might ideally upload it to a cloud and send a link.
+            // But Free EmailJS doesn't support attachments easily without paid tier or complex base64 config.
+            // We will just mention it in the email text for now to check Admin Portal.
+            if (paymentScreenshot) {
+                emailParams.message_body += "<br><br><b>Note: Payment Screenshot attached in Admin Portal.</b>";
             }
-        );
-    }
+
+            emailjs.send(settings.emailJsServiceId, settings.emailJsTemplateId, emailParams).then(
+                (response) => {
+                    console.log('SUCCESS!', response.status, response.text);
+                },
+                (error) => {
+                    console.log('FAILED...', error);
+                    window.RathnaApp.showToast("Order placed, but email failed.", 'info');
+                }
+            );
+        }
 
 
-    // 4. Show Success Message
-    window.RathnaApp.showToast(`Order Placed Successfully! (${formatPrice(total)})`, 'success');
+        // 4. Show Success Message
+        window.RathnaApp.showToast(`Order Placed Successfully! (${formatPrice(total)})`, 'success');
 
-    // Clear cart and UI
-    cart = {};
-    updateCartIcon();
-    toggleCart();
-    renderMenu(); // Update UI
+        // Clear cart and UI
+        cart = {};
+        updateCartIcon();
+        toggleCart();
+        renderMenu(); // Update UI
 
-    // Clear input
-    const fileInput = document.getElementById('payment-screenshot');
-    if (fileInput) fileInput.value = '';
+        // Clear input
+        const fileInput = document.getElementById('payment-screenshot');
+        if (fileInput) fileInput.value = '';
 
-    // Redirect to profile to see order if user is logged in
-    if (window.RathnaApp.getUserSession()) {
-        setTimeout(() => {
-            // We can use a custom modal for this later, but for now confirm is okay or just auto redirect
-            // Using confirm might be annoying if they just want to stay. 
-            // Let's just notify them to check profile.
-            window.RathnaApp.showToast("Check your Profile for Order Status", 'info');
-        }, 2000);
+        // Redirect to profile to see order if user is logged in
+        if (window.RathnaApp.getUserSession()) {
+            setTimeout(() => {
+                // We can use a custom modal for this later, but for now confirm is okay or just auto redirect
+                // Using confirm might be annoying if they just want to stay. 
+                // Let's just notify them to check profile.
+                window.RathnaApp.showToast("Check your Profile for Order Status", 'info');
+            }, 2000);
+        }
+    } catch (err) {
+        console.error("Checkout Error:", err);
+        window.RathnaApp.showToast("An error occurred during checkout. Please try again.", 'error');
     }
 }

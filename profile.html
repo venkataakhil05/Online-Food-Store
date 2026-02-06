@@ -229,7 +229,7 @@
                 let paymentStatusHtml = '';
                 const pMethod = (order.payment || '').toLowerCase();
 
-                if (pMethod.includes('cash')) {
+                if (pMethod.includes('cash') || pMethod === 'cod') {
                     paymentStatusHtml = '<div style="font-size:0.9rem; color:#fca5a5; margin-top:5px; font-weight:600;">Payment Pending (COD)</div>';
                 } else {
                     paymentStatusHtml = '<div style="font-size:0.9rem; color:#34d399; margin-top:5px; font-weight:600;">Payment Completed (Online)</div>';

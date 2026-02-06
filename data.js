@@ -2,33 +2,39 @@
 
 const INITIAL_INVENTORY = [
     // Hot Items
-    { id: 'h1', category: 'hot-items', name: 'Ragi Murukulu', qty: '100g', price: 50, stock: 20, image: './assets/ragi-murukulu.png' },
-    { id: 'h2', category: 'hot-items', name: 'Ragi Pabbilla', qty: '100g', price: 50, stock: 20, image: './assets/ragi-pabbilla.png' },
-    { id: 'h3', category: 'hot-items', name: 'Jonna Murukulu', qty: '100g', price: 50, stock: 20, image: './assets/jonna-murukulu.png' },
-    { id: 'h4', category: 'hot-items', name: 'Jonna Pabbilla', qty: '100g', price: 50, stock: 20, image: './assets/jonna-pabbilla.png' },
-    { id: 'h5', category: 'hot-items', name: 'Korra Murukulu', qty: '100g', price: 50, stock: 20, image: './assets/korra-murukulu.png' },
-    { id: 'h6', category: 'hot-items', name: 'Arike Murukulu', qty: '100g', price: 50, stock: 20, image: './assets/arike-murukulu.png' },
-    { id: 'h7', category: 'hot-items', name: 'Udala Murukulu', qty: '100g', price: 50, stock: 20, image: './assets/udala-murukulu.png' },
-    { id: 'h8', category: 'hot-items', name: 'Millet Mixture', qty: '100g', price: 50, stock: 20, image: './assets/millet-mixture.jpg' },
-    { id: 'h9', category: 'hot-items', name: 'Jonna Karas', qty: '100g', price: 50, stock: 20, image: './assets/jonna-karas.png' },
-    { id: 'h10', category: 'hot-items', name: 'Ragi Karas', qty: '100g', price: 50, stock: 20, image: './assets/ragi-karas.jpg' },
+    { id: 'h1', category: 'hot-items', name: 'Ragi Murukulu', qty: '100g', price: 50, stock: 20, image: './assets/ragi-murukulu.png', tags: ['Gluten Free', 'Rich in Calcium'] },
+    { id: 'h2', category: 'hot-items', name: 'Ragi Pabbilla', qty: '100g', price: 50, stock: 20, image: './assets/ragi-pabbilla.png', tags: ['Iron Rich'] },
+    { id: 'h3', category: 'hot-items', name: 'Jonna Murukulu', qty: '100g', price: 50, stock: 20, image: './assets/jonna-murukulu.png', tags: ['High Protein'] },
+    { id: 'h4', category: 'hot-items', name: 'Jonna Pabbilla', qty: '100g', price: 50, stock: 20, image: './assets/jonna-pabbilla.png', tags: ['Diabetic Friendly'] },
+    { id: 'h5', category: 'hot-items', name: 'Korra Murukulu', qty: '100g', price: 50, stock: 20, image: './assets/korra-murukulu.png', tags: ['Fiber Rich'] },
+    { id: 'h6', category: 'hot-items', name: 'Arike Murukulu', qty: '100g', price: 50, stock: 20, image: './assets/arike-murukulu.png', tags: ['Antioxidants'] },
+    { id: 'h7', category: 'hot-items', name: 'Udala Murukulu', qty: '100g', price: 50, stock: 20, image: './assets/udala-murukulu.png', tags: ['Easy Digestion'] },
+    { id: 'h8', category: 'hot-items', name: 'Millet Mixture', qty: '100g', price: 50, stock: 20, image: './assets/millet-mixture.jpg', tags: ['Healthy Snack'] },
+    { id: 'h9', category: 'hot-items', name: 'Jonna Karas', qty: '100g', price: 50, stock: 20, image: './assets/jonna-karas.png', tags: ['Crunchy'] },
+    { id: 'h10', category: 'hot-items', name: 'Ragi Karas', qty: '100g', price: 50, stock: 20, image: './assets/ragi-karas.jpg', tags: ['Calcium Boost'] },
 
     // Laddus
-    { id: 'l1', category: 'laddus', name: 'Ragi Minapappu Laddu', qty: '150g', price: 100, stock: 15, image: './assets/ragi-minapappu-laddu.png' },
-    { id: 'l2', category: 'laddus', name: 'Jonna Nuvvulu Laddu', qty: '150g', price: 120, stock: 15, image: './assets/jonna-nuvvulu-laddu.png' },
-    { id: 'l3', category: 'laddus', name: 'Jonna Pelalu Laddu', qty: '150g', price: 110, stock: 15 },
-    { id: 'l4', category: 'laddus', name: 'Sajja Senagapindi Laddu', qty: '150g', price: 110, stock: 15, image: './assets/sajja-senagapindi-laddu.png' },
-    { id: 'l5', category: 'laddus', name: 'Korra Flaxseeds Laddu', qty: '150g', price: 120, stock: 15 },
-    { id: 'l6', category: 'laddus', name: 'Multi Millet Minapappu Laddu', qty: '150g', price: 100, stock: 15 },
-    { id: 'l7', category: 'laddus', name: 'All In One Laddu', qty: '150g', price: 120, stock: 15 },
-    { id: 'l8', category: 'laddus', name: 'Extra Ghee', qty: '-', price: 10, stock: 100 },
+    { id: 'l1', category: 'laddus', name: 'Ragi Minapappu Laddu', qty: '150g', price: 100, stock: 15, image: './assets/ragi-minapappu-laddu.png', tags: ['Kids Favorite', 'Calcium Rich'] },
+    { id: 'l2', category: 'laddus', name: 'Jonna Nuvvulu Laddu', qty: '150g', price: 120, stock: 15, image: './assets/jonna-nuvvulu-laddu.png', tags: ['Sugar Free Options'] },
+    { id: 'l3', category: 'laddus', name: 'Jonna Pelalu Laddu', qty: '150g', price: 110, stock: 15, tags: ['Traditional Taste'] },
+    { id: 'l4', category: 'laddus', name: 'Sajja Senagapindi Laddu', qty: '150g', price: 110, stock: 15, image: './assets/sajja-senagapindi-laddu.png', tags: ['High Energy'] },
+    { id: 'l5', category: 'laddus', name: 'Korra Flaxseeds Laddu', qty: '150g', price: 120, stock: 15, tags: ['Omega-3'] },
+    { id: 'l6', category: 'laddus', name: 'Multi Millet Minapappu Laddu', qty: '150g', price: 100, stock: 15, tags: ['Nutrient Dense'] },
+    { id: 'l7', category: 'laddus', name: 'All In One Laddu', qty: '150g', price: 120, stock: 15, tags: ['Best Seller'] },
+    { id: 'l8', category: 'laddus', name: 'Extra Ghee', qty: '-', price: 10, stock: 100, tags: [] },
 
     // Chikki and Java
-    { id: 'c1', category: 'chikki-java', name: 'Ragi Palli Chikki', qty: '150g', price: 85, stock: 20 },
-    { id: 'c2', category: 'chikki-java', name: 'Jonna Palli Chikki', qty: '150g', price: 85, stock: 20 },
-    { id: 'c3', category: 'chikki-java', name: 'Multi Millet Java Powder', qty: '500g', price: 100, stock: 10 },
-    { id: 'c4', category: 'chikki-java', name: 'Multi Millet Dosa Chapathi Powder', qty: '500g', price: 100, stock: 10 },
+    { id: 'c1', category: 'chikki-java', name: 'Ragi Palli Chikki', qty: '150g', price: 85, stock: 20, tags: ['Iron Boost'] },
+    { id: 'c2', category: 'chikki-java', name: 'Jonna Palli Chikki', qty: '150g', price: 85, stock: 20, tags: ['Protein Snack'] },
+    { id: 'c3', category: 'chikki-java', name: 'Multi Millet Java Powder', qty: '500g', price: 100, stock: 10, tags: ['Breakfast Special', 'Weight Loss'] },
+    { id: 'c4', category: 'chikki-java', name: 'Multi Millet Dosa Chapathi Powder', qty: '500g', price: 100, stock: 10, tags: ['Daily Staple'] },
 ];
+
+const PROMO_CODES = {
+    'WELCOME10': { type: 'percent', value: 10, minOrder: 200 }, // 10% off
+    'FESTIVAL20': { type: 'percent', value: 20, minOrder: 1000 }, // 20% off
+    'RATHNA50': { type: 'flat', value: 50, minOrder: 500 } // Flat ₹50 off
+}; // Exposed for logic, Admin can edit later via code logic extension
 
 const DB_KEYS = {
     INVENTORY: 'rathna_inventory',
@@ -309,5 +315,6 @@ window.RathnaApp = {
     logout,
     getSettings,
     updateSettings,
-    showToast
+    showToast,
+    PROMO_CODES
 };
